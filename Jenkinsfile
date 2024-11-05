@@ -10,31 +10,23 @@ pipeline {
     stages {
         stage('Clone sources') {
             steps {
-                git branch: 'main', credentialsId: 'my-credential', url: 'https://github.com/matheusbanhos/global-lakeit.git'
-            }
-        }
-        
-        stage('SonarQube Report Export') {
-            steps {
-                script {
-                    def sonarServer = 'http://52.200.180.65:9000'
-                    def sonarReportData = sh (
-                    script: "curl -s -u ${SONAR_TOKEN}: ${sonarServer}/api/issues/search?componentKeys=global-lakeit",
-                    returnStdout: true
-                    ).trim()
-                    writeFile file: 'sonarqube-report.json', text: sonarReportData
-                }
+                git branch: 'main', credentialsId: 'my-credential', url: 'https://github.com/global-develop-qa/model.git'
             }
         }
 
         stage ("Import Sonarqube Defect DOJO") {
             steps {
                 script {
-                    sh "python3 upload-reports-sonarqube.py sonarqube-report.json"
                     
                     sh """python3 --version /
                     pwd /
                     ls -lha"""
+
+                    sh """
+                       export DB_USERNAME="${SONAR_TOKEN}"
+                       export DB_PASSWORD="${SONAR_TOKEN}"
+                       python3 upload.py
+                    """                    
                 }
             }
         }
