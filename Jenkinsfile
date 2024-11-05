@@ -5,6 +5,7 @@ pipeline {
 
     environment {
         SONAR_TOKEN = credentials('global-sonar-token')
+        USERNAME    = 'abcd 0123456789 abcd 9876543210'
     }
 
     stages {
@@ -23,7 +24,7 @@ pipeline {
                     ls -lha"""
 
                     sh """
-                       export DB_USERNAME="${SONAR_TOKEN}"
+                       export DB_USERNAME="${USERNAME}"
                        export DB_PASSWORD="${SONAR_TOKEN}"
                        python3 upload.py
                     """                    
