@@ -14,26 +14,6 @@ pipeline {
             }
         }
         
-        stage("SonarQube Analysis"){
-            environment {
-                SCANNER_HOME = tool 'SonarQubeScanner';    
-            }
-
-            steps{
-               withSonarQubeEnv("SonarQube"){
-                   sh '''$SCANNER_HOME/bin/sonar-scanner \
-                   -Dsonar.projectName=global-lakeit \
-                   -Dsonar.projectKey=global-lakeit \
-                   -Dsonar.sources=. \
-                   -Dsonar.language=ts \
-                   -Dsonar.sourceEncoding=UTF-8 \
-                   -Dsonar.scm.disabled=true \
-                   -Dsonar.issuesReport.html.enable=true \
-                   -Dsonar.report.export.path=report.json'''
-               }
-            }
-        }
-
         stage('SonarQube Report Export') {
             steps {
                 script {
@@ -51,51 +31,6 @@ pipeline {
             steps {
                 script {
                     sh "python3 upload-reports-sonarqube.py sonarqube-report.json"
-                    
-                    sh """python3 --version /
-                    pwd /
-                    ls -lha"""
-                }
-            }
-        }
-
-        stage("SonarQube Quality Gates"){
-            steps{
-               timeout(time: 1, unit: "MINUTES"){
-                   waitForQualityGate abortPipeline: false
-               }
-            }
-        }
-        
-        stage("OWASP Dependency-Check"){
-            steps{
-                dependencyCheck additionalArguments: '--scan ./', odcInstallation: 'OWASP'
-                dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
-            }
-        }
-
-        stage ("Import OWASP Defect DOJO") {
-            steps {
-                script {
-                    sh "python3 upload-reports.py dependency-check-report.xml"
-                    
-                    sh """python3 --version /
-                    pwd /
-                    ls -lha"""
-                }
-            }
-        }
-
-        stage("TRIVY Scan") {            
-            steps {                
-                sh "trivy fs -f json . > trivy-fs_report.json"
-            }        
-        }
-
-        stage ("Import TRIVY Defect DOJO") {
-            steps {
-                script {
-                    sh "python3 upload-reports-trivy.py trivy-fs_report.json"
                     
                     sh """python3 --version /
                     pwd /
